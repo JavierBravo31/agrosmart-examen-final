@@ -244,30 +244,131 @@ public static final Function<Producto, Producto> A_MAYUSCULAS =
 **4.1** Pega tu método `obtenerProductosComercializables()` completo.
 
 ```java
+public Flux<Producto> obtenerProductosComercializables() {
 
+    // fromCallable difiere la consulta bloqueante hasta que exista una
+    // suscripción al flujo.
+    return Mono.fromCallable(repository::findAll)
+
+            // JPA/Hibernate utiliza JDBC y bloquea el hilo durante la consulta.
+            // boundedElastic evita ejecutar ese bloqueo en el event loop de Netty.
+            .subscribeOn(Schedulers.boundedElastic())
+
+            // El repositorio devuelve una List; flatMapMany transforma esa lista
+            // materializada en un Flux que emite cada entidad individualmente.
+            .flatMapMany(Flux::fromIterable)
+
+            // Convierte ProductoEntity, perteneciente al ORM, en el modelo
+            // de dominio inmutable Producto.
+            .map(ProductoMapper::toDominio)
+
+            // Aplica la Function de la Fase 3 y crea un nuevo Producto con
+            // el nombre en mayúsculas, sin modificar el objeto recibido.
+            .map(ProductoFilters.A_MAYUSCULAS)
+
+            // Descarta los productos cuyo precio no sea mayor que cero o
+            // cuya lista de correos esté vacía.
+            .filter(ProductoFilters.IS_VALID)
+
+            // Ejecuta un efecto de trazabilidad con id y nombre sin cambiar
+            // el producto que continúa por el flujo.
+            .doOnNext(ProductoFilters.LOG_PRODUCTO)
+
+            // Si todos los productos fueron descartados por el filtro,
+            // emite un producto genérico en lugar de terminar sin elementos.
+            .defaultIfEmpty(PRODUCTO_GENERICO);
+}
 ```
 
 **4.2** ¿Qué pasa **exactamente** si eliminas
 `.subscribeOn(Schedulers.boundedElastic())` de ese método? Si lo probaste, indica qué
 hilo aparecía en el log antes y después.
 
+> En mi método `obtenerProductosComercializables()` envolví
+> `repository.findAll()` con `Mono.fromCallable(...)` y coloqué inmediatamente
+> `.subscribeOn(Schedulers.boundedElastic())`.
 >
+> `ProductoRepository` extiende `JpaRepository`, por lo que `findAll()` utiliza
+> Hibernate y JDBC. Esa consulta espera de forma bloqueante mientras PostgreSQL
+> responde.
+>
+> Si elimino `subscribeOn(boundedElastic())`, `fromCallable` ejecuta la consulta
+> en el hilo que realiza la suscripción. Cuando posteriormente el flujo sea
+> utilizado por `AgroSmartController`, ese hilo puede ser uno de Netty, con un
+> nombre como `reactor-http-nio-*`.
+>
+> Mientras ese hilo espera a PostgreSQL no puede atender otras solicitudes,
+> reduciendo la capacidad del event loop y afectando a todas las peticiones que
+> dependen de ese mismo hilo.
+>
+> Con `boundedElastic`, la consulta bloqueante se traslada a un hilo preparado
+> para tareas bloqueantes y, cuando termina, los resultados continúan por la
+> cadena reactiva.
+>
+> No dejé una versión sin `boundedElastic` en el código final porque violaría la
+> restricción principal de la Fase 4.
 
 **4.3** ¿Por qué `Mono.fromCallable(...)` y no `Mono.just(repository.findAll())`?
 (pista: cuándo se ejecuta cada uno)
 
+> En mi código utilicé:
 >
+> `Mono.fromCallable(repository::findAll)`
+>
+> `fromCallable` recibe la operación y la ejecuta solamente cuando alguien se
+> suscribe. Esto permite que `subscribeOn(Schedulers.boundedElastic())` determine
+> el hilo donde se realizará la consulta.
+>
+> En cambio, con `Mono.just(repository.findAll())`, Java ejecutaría primero
+> `repository.findAll()` para obtener el argumento que se entrega a `Mono.just`.
+> Por lo tanto, la consulta bloquearía el hilo llamante antes de que exista el
+> flujo y antes de que `subscribeOn` pudiera intervenir.
 
 **4.4** En **tu** código, ¿dónde usaste `defaultIfEmpty` y dónde `switchIfEmpty`, y por
 qué no son intercambiables en esos dos lugares?
 
+> Utilicé `defaultIfEmpty(PRODUCTO_GENERICO)` al final de
+> `obtenerProductosComercializables()`.
 >
+> En ese método la ausencia de elementos significa que el repositorio estaba
+> vacío o que `ProductoFilters.IS_VALID` descartó todos los productos. En ese
+> caso la regla solicitada es emitir un producto genérico como valor normal.
+>
+> Utilicé `switchIfEmpty(Mono.error(new ProductoNoEncontradoException(id)))` en
+> `buscarPorId(Long id)`.
+>
+> Ahí la ausencia tiene otro significado: el identificador solicitado no existe.
+> No debo devolver un producto genérico porque ocultaría el error. Debo cambiar
+> el Mono vacío por un publisher que emite
+> `ProductoNoEncontradoException`, que después será traducida a HTTP 404.
+>
+> No son intercambiables porque `defaultIfEmpty` emite un elemento normal,
+> mientras que mi `switchIfEmpty` reemplaza el flujo vacío por un flujo de error.
 
 **4.5** ¿Por qué `doOnNext` no sirve para transformar el elemento, si aparentemente
 "recibe" el producto?
 
+> En mi flujo utilicé:
 >
+> `.doOnNext(ProductoFilters.LOG_PRODUCTO)`
+>
+> `LOG_PRODUCTO` es un `Consumer<Producto>`, por lo que recibe el producto para
+> ejecutar un efecto de trazabilidad, pero no devuelve ningún valor.
+>
+> `doOnNext` deja continuar exactamente el mismo producto que recibió. Por eso lo
+> uso únicamente para imprimir el id y el nombre procesado.
+>
+> Para transformar utilicé `map`, específicamente:
+>
+> `.map(ProductoMapper::toDominio)`
+>
+> y:
+>
+> `.map(ProductoFilters.A_MAYUSCULAS)`
+>
+> En esos casos las funciones sí devuelven el objeto que continuará por la cadena.
 
+---
 ---
 
 ## Fase 5 — Módulo de IA con LangChain4j
