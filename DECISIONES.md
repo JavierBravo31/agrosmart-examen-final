@@ -17,10 +17,10 @@
 
 ## Datos
 
-- **Nombre:**
-- **Cédula:**
-- **NN (dos últimos dígitos):**
-- **Categoría asignada (según el último dígito):**
+- **Nombre:** Javier Neicer Bravo Macias
+- **Cédula:** 1725085177
+- **NN (dos últimos dígitos):** 77
+- **Categoría asignada (según el último dígito):** Flores
 
 ---
 
@@ -28,25 +28,24 @@
 
 **1.1** ¿Qué archivo activa el perfil `prod` y qué línea exacta lo hace?
 
+> En mi proyecto el perfil `prod` se activa en
+> `src/main/resources/application.properties`.
+> La línea que lo activa es:
 >
+> `spring.profiles.active=prod`
+>
+> En mi archivo corresponde a la línea 2. La línea anterior define
+> `spring.application.name=agrosmart`.
 
 **1.2** Pega la línea del log de arranque donde se ve tu puerto y el perfil activo.
 
-```
+```text
+2026-07-30T21:23:37.869-05:00 INFO ... AgrosmartApplication : The following 1 profile is active: "prod"
 
-```
+2026-07-30T21:45:06.230-05:00 INFO ... NettyWebServer : Netty started on port 8177 (http)
 
-**1.3** ¿Qué habría pasado si dejabas `ddl-auto=create-drop` en lugar de `update`?
-Responde pensando en tus datos sembrados.
-
->
-
-**1.4** ¿Levantaste PostgreSQL con `compose.yaml` (Opción A) o con una instalación local
-(Opción B)? ¿Qué ventaja tiene la que elegiste?
-
->
-
----
+2026-07-30T21:45:06.239-05:00 INFO ... AgrosmartApplication : Started AgrosmartApplication
+---~~
 
 ## Fase 2 — Persistencia con JPA/Hibernate
 
