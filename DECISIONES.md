@@ -154,29 +154,88 @@ lo fuera? (piensa en la restricción `unique` de `nombre_producto`)
 > Como `nombre_producto` tiene una restricción `UNIQUE`, el segundo arranque
 > produciría un error por intentar insertar nombres ya existentes en
 > `tbl_productos_base_77`.## Fase 3 — Modelo inmutable y lógica funcional
+## Fase 3 — Modelo inmutable y lógica funcional
 
 **3.1** ¿Por qué tienes **dos** clases (`ProductoEntity` y `Producto`) en lugar de una?
 ¿Qué te impide hacer inmutable directamente la entidad de Hibernate?
 
+> En mi proyecto separé `ProductoEntity` de `Producto` porque cumplen funciones
+> diferentes.
 >
+> `ProductoEntity` representa la tabla `tbl_productos_base_77` utilizada por
+> JPA/Hibernate. En esa clase mantengo el constructor vacío, getters y setters
+> necesarios para que Hibernate pueda materializar las entidades.
+>
+> En cambio, `Producto` es mi modelo de dominio y lo diseñé como una clase
+> `final`, con todos sus atributos `private final` y sin setters.
+>
+> Esta separación me permite mantener las necesidades del ORM dentro de
+> `ProductoEntity` sin hacer mutable mi modelo de dominio. La conversión entre
+> ambas representaciones la realizo mediante
+> `ProductoMapper.toDominio(ProductoEntity)`.
 
 **3.2** Escribe el código exacto de **tus dos** copias defensivas e indica en qué línea
 está cada una.
 
 ```java
+// Producto.java - línea 27
+this.correosNotificacion = new ArrayList<>(correosNotificacion);
 
+// Producto.java - líneas 46 a 50
+public List<String> getCorreosNotificacion() {
+    return Collections.unmodifiableList(
+            new ArrayList<>(correosNotificacion)
+    );
+}
 ```
+
+> La primera es la copia defensiva de entrada. En el constructor no guardo
+> directamente la referencia de la lista recibida, sino una nueva
+> `ArrayList`.
+>
+> La segunda es la copia defensiva de salida. En el getter creo nuevamente una
+> copia y la retorno mediante `Collections.unmodifiableList`, por lo que quien
+> recibe el resultado no obtiene acceso modificable al estado interno de mi
+> `Producto`.
 
 **3.3** ¿Por qué la copia defensiva **solo en el getter** no sería suficiente? Describe
 el ataque concreto que quedaría abierto sobre **tu** clase.
 
+> Si solamente protegiera el getter, mi clase todavía podría modificarse desde
+> afuera mediante la lista que se entrega al constructor.
 >
+> Por ejemplo, podría crear una lista llamada `correos`, pasarla al constructor
+> de `Producto` y después ejecutar `correos.clear()`.
+>
+> Si mi constructor hubiera guardado directamente esa misma referencia, el
+> atributo interno `correosNotificacion` también quedaría vacío sin utilizar
+> ningún método de `Producto`.
+>
+> Por eso en mi constructor uso
+> `new ArrayList<>(correosNotificacion)`. La lista que conserva mi objeto es
+> independiente de la lista original. Luego el getter también realiza una copia
+> defensiva de salida para evitar modificaciones desde el otro extremo.
 
 **3.4** ¿Cómo implementaste `A_MAYUSCULAS` para no mutar el `Producto` recibido?
 
 ```java
-
+public static final Function<Producto, Producto> A_MAYUSCULAS =
+        producto -> new Producto(
+                producto.getId(),
+                producto.getNombre().toUpperCase(),
+                producto.getCategoria(),
+                producto.getPrecioUsd(),
+                producto.getCorreosNotificacion()
+        );
 ```
+
+> Mi `A_MAYUSCULAS` no modifica el objeto recibido. La lambda construye una nueva
+> instancia de `Producto`, conserva los demás valores y coloca el nombre en
+> mayúsculas.
+>
+> Además, `producto.getCorreosNotificacion()` devuelve una copia de solo lectura
+> y el constructor de la nueva instancia vuelve a realizar su propia copia
+> defensiva, por lo que tampoco comparto la lista interna entre los dos objetos.
 
 ---
 
