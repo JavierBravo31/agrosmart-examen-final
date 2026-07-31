@@ -4,11 +4,11 @@
 > sincrónica** del examen. Toma menos de 5 minutos y es lo único con horario fijo:
 > después trabajas a tu ritmo hasta el plazo del día siguiente.
 
-- **Nombre completo:**
-- **Cédula:**
-- **NRC:**
-- **Nonce del examen:**            <!-- código publicado por el docente en la sesión -->
-- **Fecha y hora de inicio:**      <!-- formato: 2026-XX-XX HH:MM -->
+- **Nombre completo: Javier Neicer Bravo Macias**
+- **Cédula: 1725085177**
+- **NRC: 30405**
+- **Nonce del examen:AGS-2026**            <!-- código publicado por el docente en la sesión -->
+- **Fecha y hora de inicio: 2026-07-30 20:15**      <!-- formato: 2026-XX-XX HH:MM -->
 
 ---
 
@@ -17,13 +17,13 @@
 Sean `NN` los **dos últimos dígitos** de mi cédula. No hay cálculos: se copian dígitos y
 se busca en una tabla.
 
-| # | Parámetro | Cómo se obtiene | Mi valor |
-|:---:|-----------|-----------------|----------|
-| — | `NN` | los 2 últimos dígitos de mi cédula | |
-| 1 | Nombre de la tabla | `tbl_productos_base_` + `NN` | |
-| 2 | Puerto | `81` + `NN` | |
-| 3 | Categoría | según el **último dígito** (tabla de abajo) | |
-| — | Audiencia para el prompt de IA | según la categoría | |
+| # | Parámetro | Cómo se obtiene | Mi valor            |
+|:---:|-----------|-----------------|---------------------|
+| — | `NN` | los 2 últimos dígitos de mi cédula | 77                  |
+| 1 | Nombre de la tabla | `tbl_productos_base_` + `NN` | tbl_productos_base_77 |
+| 2 | Puerto | `81` + `NN` | 8177                |
+| 3 | Categoría | según el **último dígito** (tabla de abajo) | Flores              |
+| — | Audiencia para el prompt de IA | según la categoría | floristerías premium                     |
 
 **Tabla de categorías:**
 
