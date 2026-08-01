@@ -522,19 +522,97 @@ Publicidad no disponible en este momento (NombreDeLaExcepcion)
 
 **6.1** Pega la salida real de tus cuatro `curl`.
 
-```
+```text
+1. GET /api/productos
 
+PS C:\Users\User\Documents\7MO SEMESTRE\PROGRAMACION AVANZADA\agrosmart-examen-final> curl.exe http://localhost:8177/api/productos
+[{"id":1,"nombre":"ROSAS PREMIUM","categoria":"Flores","precioUsd":18.50,"correosNotificacion":["ventas@agrosmart.ec"]},{"id":2,"nombre":"GYPSOPHILA EXPORTACION","categoria":"Flores","precioUsd":12.75,"correosNotificacion":["pedidos@agrosmart.ec"]},{"id":3,"nombre":"CLAVELES SELECTOS","categoria":"Flores","precioUsd":9.90,"correosNotificacion":["comercial@agrosmart.ec","exportaciones@agrosmart.ec"]}]
+
+2. GET /api/productos/1
+
+PS C:\Users\User\Documents\7MO SEMESTRE\PROGRAMACION AVANZADA\agrosmart-examen-final> curl.exe http://localhost:8177/api/productos/1
+{"id":1,"nombre":"Rosas Premium","categoria":"Flores","precioUsd":18.50,"correosNotificacion":["ventas@agrosmart.ec"]}
+
+
+3. GET /api/productos/9999
+
+PS C:\Users\User\Documents\7MO SEMESTRE\PROGRAMACION AVANZADA\agrosmart-examen-final> curl.exe -i http://localhost:8177/api/productos/9999
+HTTP/1.1 404 Not Found
+Content-Type: application/json
+Content-Length: 127
+
+{"timestamp":"2026-08-01T00:41:58.899Z","path":"/api/productos/9999","status":404,"error":"Not Found","requestId":"d1d4aa88-6"}
+
+
+4. GET /api/agrosmart/publicidad
+
+PS C:\Users\User\Documents\7MO SEMESTRE\PROGRAMACION AVANZADA\agrosmart-examen-final> curl.exe "http://localhost:8177/api/agrosmart/publicidad?producto=Rosas%20Premium&audiencia=florister%C3%ADas%20premium"
+"Descubre la elegancia de nuestras Rosas Premium: el toque perfecto para tus creaciones exclusivas."
 ```
 
 **6.2** ¿Cómo lograste que el id inexistente responda **404** y no 500?
 
+> En mi método `ProductoService.buscarPorId(Long id)`, la consulta JPA devuelve un
+> `Optional<ProductoEntity>`. Después de convertirlo con
+> `.flatMap(Mono::justOrEmpty)`, el flujo queda vacío cuando el producto no existe.
 >
+> En ese caso utilizo:
+>
+> ```java
+> .switchIfEmpty(
+>         Mono.error(new ProductoNoEncontradoException(id))
+> )
+> ```
+>
+> Esto reemplaza el `Mono` vacío por una señal de error de tipo
+> `ProductoNoEncontradoException`.
+>
+> En mi clase `ProductoNoEncontradoException` agregué:
+>
+> ```java
+> @ResponseStatus(HttpStatus.NOT_FOUND)
+> ```
+>
+> Por esa razón Spring WebFlux traduce esa excepción a una respuesta HTTP
+> `404 Not Found`, en lugar de tratarla como un error interno `500`.
+>
+> Lo comprobé desde terminal ejecutando:
+>
+> `curl.exe -i http://localhost:8177/api/productos/9999`
+>
+> En la salida apareció `HTTP/1.1 404 Not Found`.
 
 **6.3** ¿Qué pasaría si tu controlador devolviera `List<Producto>` en lugar de
 `Flux<Producto>`? ¿Seguiría compilando? ¿Seguiría siendo no bloqueante?
 
+> Un método de controlador podría compilar devolviendo `List<Producto>` si yo
+> cambiara también su implementación para obtener una lista materializada.
 >
+> Sin embargo, eso rompería el contrato reactivo de mi API. Para construir esa
+> lista desde el `Flux<Producto>` tendría que esperar a que el flujo termine o
+> utilizar una extracción bloqueante como `block()`, lo cual está prohibido.
+>
+> En mi `AgroSmartController`, el método:
+>
+> ```java
+> public Flux<Producto> obtenerProductos()
+> ```
+>
+> retorna directamente:
+>
+> ```java
+> productoService.obtenerProductosComercializables()
+> ```
+>
+> De esta manera el controlador no espera ni materializa los datos. WebFlux se
+> suscribe al `Flux` y envía los elementos de forma reactiva cuando están
+> disponibles.
+>
+> Lo mismo ocurre con `Mono<Producto>` y `Mono<String>` en los otros dos
+> endpoints. Ninguna firma pública de mi controlador devuelve una colección
+> bloqueante ni un objeto obtenido mediante `block()`.
 
+---
 ---
 
 ## Fase 7 — Pruebas unitarias
