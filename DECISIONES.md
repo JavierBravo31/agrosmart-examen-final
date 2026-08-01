@@ -619,30 +619,152 @@ PS C:\Users\User\Documents\7MO SEMESTRE\PROGRAMACION AVANZADA\agrosmart-examen-f
 
 **7.1** Pega la salida real de tus pruebas (`./mvnw test` o `./gradlew test`).
 
-```
+```text
+PS C:\Users\User\Documents\7MO SEMESTRE\PROGRAMACION AVANZADA\agrosmart-examen-final> .\mvnw.cmd clean test
+[INFO] Scanning for projects...
+[INFO] 
+[INFO] -----------------------< ec.edu.espe:agrosmart >------------------------
+[INFO] Building agrosmart 0.0.1-SNAPSHOT
+[INFO]   from pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- clean:3.5.0:clean (default-clean) @ agrosmart ---
+[INFO] Deleting C:\Users\User\Documents\7MO SEMESTRE\PROGRAMACION AVANZADA\agrosmart-examen-final\target
+[INFO] 
+[INFO] --- resources:3.5.0:resources (default-resources) @ agrosmart ---
+[INFO] Copying 2 resources from src\main\resources to target\classes
+[INFO] Copying 0 resource from src\main\resources to target\classes
+[INFO] 
+[INFO] --- compiler:3.15.0:compile (default-compile) @ agrosmart ---
+[INFO] Recompiling the module because of changed source code.
+[INFO] Compiling 11 source files with javac [debug parameters release 21] to target\classes
+[INFO] 
+[INFO] --- resources:3.5.0:testResources (default-testResources) @ agrosmart ---
+[INFO] skip non existing resourceDirectory C:\Users\User\Documents\7MO SEMESTRE\PROGRAMACION AVANZADA\agrosmart-examen-final\src\test\resources
+[INFO] 
+[INFO] --- compiler:3.15.0:testCompile (default-testCompile) @ agrosmart ---
+[INFO] Recompiling the module because of changed dependency.
+[INFO] Compiling 4 source files with javac [debug parameters release 21] to target\test-classes
+[INFO] 
+[INFO] --- surefire:3.5.6:test (default-test) @ agrosmart ---
+[INFO] Using auto detected provider org.apache.maven.surefire.junitplatform.JUnitPlatformProvider
+[INFO] 
+[INFO] -------------------------------------------------------
+[INFO]  T E S T S
+[INFO] -------------------------------------------------------
+[INFO] Running ec.edu.espe.agrosmart.domain.ProductoFiltersTest
+[INFO] Tests run: 4, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.108 s -- in ec.edu.espe.agrosmart.domain.ProductoFiltersTest
+[INFO] Running ec.edu.espe.agrosmart.domain.ProductoTest
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.015 s -- in ec.edu.espe.agrosmart.domain.ProductoTest
+[INFO] Running ec.edu.espe.agrosmart.service.ProductoServiceTest
+Mockito is currently self-attaching to enable the inline-mock-maker. This will no longer work in future releases of the JDK. Please add Mockito as an agent to your build as described in Mockito's documentation: https://javadoc.io/doc/org.mockito/mockito-core/latest/org.mockito/org/mockito/Mockito.html#0.3
+WARNING: A Java agent has been loaded dynamically (C:\Users\User\.m2\repository\net\bytebuddy\byte-buddy-agent\1.18.10\byte-buddy-agent-1.18.10.jar)
+WARNING: If a serviceability tool is in use, please run with -XX:+EnableDynamicAgentLoading to hide this warning
+WARNING: If a serviceability tool is not in use, please run with -Djdk.instrument.traceUsage for more information
+WARNING: Dynamic loading of agents will be disallowed by default in a future release
+OpenJDK 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended
+Producto procesado: id=null, nombre=ROSAS PREMIUM
+Producto procesado: id=null, nombre=GYPSOPHILA EXPORTACION
+Producto procesado: id=null, nombre=CLAVELES SELECTOS
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 2.959 s -- in ec.edu.espe.agrosmart.service.ProductoServiceTest
+[INFO] Running ec.edu.espe.agrosmart.service.PublicidadServiceTest
+[INFO] Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.231 s -- in ec.edu.espe.agrosmart.service.PublicidadServiceTest
+[INFO] 
+[INFO] Results:
+[INFO] 
+[INFO] Tests run: 12, Failures: 0, Errors: 0, Skipped: 0
+[INFO] 
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  20.262 s
+[INFO] Finished at: 2026-07-31T20:15:24-05:00
+[INFO] ------------------------------------------------------------------------
 
 ```
 
 **7.2** ¿Cuántos productos espera tu `expectNextCount(...)` y por qué ese número
 concreto? Relaciónalo con tu semilla.
 
+> En `ProductoServiceTest` utilicé:
 >
+> ```java
+> StepVerifier.create(flujo)
+>         .expectNextCount(3)
+>         .verifyComplete();
+> ```
+>
+> Espero exactamente tres productos porque mi siembra contiene cinco registros de
+> la categoría Flores: tres válidos y dos inválidos.
+>
+> Los tres válidos tienen `precioUsd` mayor que cero y al menos un correo. El cuarto
+> tiene precio cero y el quinto tiene la lista de correos vacía.
+>
+> En `ProductoService.obtenerProductosComercializables()`,
+> `ProductoFilters.IS_VALID` descarta esos dos registros inválidos. Por eso el
+> `Flux` debe emitir exactamente tres elementos antes de completarse.
 
 **7.3** ¿Por qué mockeaste `ProductoRepository` en lugar de dejar que la prueba consulte
 PostgreSQL?
 
+> En `ProductoServiceTest` creé el repositorio mediante:
 >
+> ```java
+> ProductoRepository repository =
+>         Mockito.mock(ProductoRepository.class);
+> ```
+>
+> Luego configuré `findAll()` y `findById()` para devolver datos controlados.
+>
+> Lo hice porque estoy probando la lógica de `ProductoService`, no la conexión,
+> Hibernate ni PostgreSQL. Si la prueba dependiera de la base necesitaría Docker,
+> credenciales, el puerto `5432` y datos previamente sembrados.
+>
+> Con el mock la prueba es repetible, rápida y aislada. También puedo construir
+> exactamente los tres escenarios requeridos: tres válidos, todos inválidos e id
+> inexistente, sin modificar `tbl_productos_base_77`.
 
 **7.4** ¿Qué demuestra `assertNotSame` que `assertEquals` **no** demuestra en tu prueba
 de copia defensiva?
 
+> `assertEquals` demuestra que dos listas tienen el mismo contenido, pero no
+> demuestra que sean objetos distintos.
 >
+> En `ProductoTest` utilicé:
+>
+> ```java
+> assertNotSame(correosOriginales, correosDevueltos);
+> ```
+>
+> Esta aserción comprueba que `getCorreosNotificacion()` no devuelve la misma
+> referencia que ingresó al constructor.
+>
+> Dos listas pueden ser iguales según `assertEquals` y aun así ser exactamente el
+> mismo objeto. En ese caso, una modificación externa también modificaría el estado
+> interno del producto.
+>
+> `assertNotSame`, junto con `assertThrows(UnsupportedOperationException.class, ...)`,
+> demuestra que el getter entrega otra instancia y que esa salida no puede
+> modificarse.
 
 **7.5** ¿Por qué una prueba de un `Flux` que no llama a `verifyComplete()` (o a
 `verify()`) no está probando nada?
 
+> Project Reactor trabaja de manera diferida: el `Flux` no ejecuta su cadena hasta
+> que existe una suscripción.
 >
+> `StepVerifier.create(flujo)` únicamente prepara el escenario de verificación.
+> Las llamadas como `expectNextCount(...)` describen lo que espero, pero todavía no
+> ejecutan el flujo.
+>
+> En mis pruebas termino con `verifyComplete()` o `verify()`. Esas llamadas
+> realizan la suscripción, esperan las señales y comprueban el resultado.
+>
+> Sin una de ellas, `repository.findAll()`, los operadores `map`, `filter`,
+> `defaultIfEmpty` y las aserciones de señales podrían no ejecutarse; por eso la
+> prueba terminaría sin verificar realmente el comportamiento reactivo.
 
+---
 ---
 
 ## Fase 8 — Integración y cierre
