@@ -771,21 +771,128 @@ de copia defensiva?
 
 **8.1** Pega tu `git log --oneline --graph --all`.
 
+```text
+PS C:\Users\User\Documents\7MO SEMESTRE\PROGRAMACION AVANZADA\agrosmart-examen-final> git log --oneline --graph --all --decorate |
+>> Out-File -Encoding utf8 docs\evidencias\10-git-log-completo.txt                                                                                            
+PS C:\Users\User\Documents\7MO SEMESTRE\PROGRAMACION AVANZADA\agrosmart-examen-final> git log --format="%h | %ad | %cd | %s" --date=iso --all
+d3d6fb1 | 2026-07-31 20:24:52 -0500 | 2026-07-31 20:24:52 -0500 | Merge pull request #8 from JavierBravo31/feature/pruebas
+90717cf | 2026-07-31 20:23:46 -0500 | 2026-07-31 20:23:46 -0500 | test: agrega pruebas del modelo, logica funcional, flujo reactivo e ia
+60ded45 | 2026-07-31 20:05:20 -0500 | 2026-07-31 20:05:20 -0500 | Merge pull request #7 from JavierBravo31/feature/api-reactiva
+18badcd | 2026-07-31 20:01:03 -0500 | 2026-07-31 20:01:03 -0500 | docs: agrega evidencias curl de la fase 6
+8a40b6c | 2026-07-31 19:55:37 -0500 | 2026-07-31 19:55:37 -0500 | Merge pull request #6 from JavierBravo31/feature/api-reactiva
+aa4e2e0 | 2026-07-31 19:54:21 -0500 | 2026-07-31 19:54:21 -0500 | feat: expone endpoints reactivos y de publicidad
+deb1f6f | 2026-07-31 19:28:44 -0500 | 2026-07-31 19:28:44 -0500 | Merge pull request #5 from JavierBravo31/feature/ia-langchain4j
+2494c7e | 2026-07-31 19:27:50 -0500 | 2026-07-31 19:27:50 -0500 | feat: integra langchain4j para publicidad de productos
+5ffbbda | 2026-07-31 18:51:43 -0500 | 2026-07-31 18:51:43 -0500 | Merge pull request #4 from JavierBravo31/feature/servicio-reactivo
+22db0a4 | 2026-07-31 18:50:15 -0500 | 2026-07-31 18:50:15 -0500 | feat: implementa servicio reactivo con boundedElastic y operadores
+976e7b2 | 2026-07-31 18:29:24 -0500 | 2026-07-31 18:29:24 -0500 | Merge pull request #3 from JavierBravo31/feature/modelo-inmutable
+1d53769 | 2026-07-31 18:28:14 -0500 | 2026-07-31 18:28:14 -0500 | feat: agrega modelo inmutable de producto y logica funcional
+5459de3 | 2026-07-30 23:55:55 -0500 | 2026-07-30 23:55:55 -0500 | Merge pull request #2 from JavierBravo31/feature/persistencia-jpa
+db0e89e | 2026-07-30 23:54:07 -0500 | 2026-07-30 23:54:07 -0500 | feat: agrega entidad jpa de productos y siembra de datos
+3a4afae | 2026-07-30 22:04:44 -0500 | 2026-07-30 22:04:44 -0500 | Merge pull request #1 from JavierBravo31/feature/config-perfiles
+fc48798 | 2026-07-30 21:59:16 -0500 | 2026-07-30 21:59:16 -0500 | chore: configura perfil prod con postgresql y puerto propio
+a24d20f | 2026-07-30 20:20:50 -0500 | 2026-07-30 20:20:50 -0500 | chore: inicializa proyecto agrosmart y registra identidad del examen
+77ef0e2 | 2026-07-30 19:31:34 -0500 | 2026-07-30 19:31:34 -0500 | Initial commit
+PS C:\Users\User\Documents\7MO SEMESTRE\PROGRAMACION AVANZADA\agrosmart-examen-final> git log --oneline --graph --all --decorate             
+*   d3d6fb1 (HEAD -> feature/documentacion, origin/main, origin/HEAD, main) Merge pull request #8 from JavierBravo31/feature/pruebas
+|\  
+| * 90717cf (origin/feature/pruebas, feature/pruebas) test: agrega pruebas del modelo, logica funcional, flujo reactivo e ia
+|/  
+*   60ded45 Merge pull request #7 from JavierBravo31/feature/api-reactiva
+|\  
+| * 18badcd (origin/feature/api-reactiva, feature/api-reactiva) docs: agrega evidencias curl de la fase 6
+* | 8a40b6c Merge pull request #6 from JavierBravo31/feature/api-reactiva
+|\| 
+| * aa4e2e0 feat: expone endpoints reactivos y de publicidad
+|/  
+*   deb1f6f Merge pull request #5 from JavierBravo31/feature/ia-langchain4j
+|\  
+| * 2494c7e (origin/feature/ia-langchain4j, feature/ia-langchain4j) feat: integra langchain4j para publicidad de productos
+|/  
+*   5ffbbda Merge pull request #4 from JavierBravo31/feature/servicio-reactivo
+|\  
+| * 22db0a4 (origin/feature/servicio-reactivo, feature/servicio-reactivo) feat: implementa servicio reactivo con boundedElastic y operadores
+|/  
+*   976e7b2 Merge pull request #3 from JavierBravo31/feature/modelo-inmutable
+|\  
+| * 1d53769 (origin/feature/modelo-inmutable, feature/modelo-inmutable) feat: agrega modelo inmutable de producto y logica funcional
+|/  
+*   5459de3 Merge pull request #2 from JavierBravo31/feature/persistencia-jpa
+|\  
+| * db0e89e (origin/feature/persistencia-jpa, feature/persistencia-jpa) feat: agrega entidad jpa de productos y siembra de datos
+|/  
+*   3a4afae Merge pull request #1 from JavierBravo31/feature/config-perfiles
+|\  
+| * fc48798 (origin/feature/config-perfiles, feature/config-perfiles) chore: configura perfil prod con postgresql y puerto propio
+|/  
+* a24d20f chore: inicializa proyecto agrosmart y registra identidad del examen
+* 77ef0e2 Initial commit
+(END)
 ```
 
-```
+> En el historial se observa que desarrollé cada parte en una rama específica y
+> que las integraciones se realizaron mediante Pull Request con merge commit.
+>
+> No utilicé squash, `git push --force` ni reescribí las fechas del historial.
 
 **8.2** ¿Qué fase te tomó más tiempo del previsto y por qué?
 
+> La fase que más tiempo adicional me tomó fue la Fase 1, correspondiente a la
+> configuración del perfil `prod` y PostgreSQL.
 >
+> El problema no estaba en el mapeo de Spring, sino en que mi computadora tenía
+> simultáneamente PostgreSQL 17 instalado como servicio de Windows y el
+> PostgreSQL levantado mediante `compose.yaml`.
+>
+> El servicio local `postgresql-x64-17` ocupaba el puerto `5432`. Aunque Docker
+> estaba levantado, AgroSmart intentaba conectarse al servidor local y aparecía
+> el error de autenticación `SQLState 28P01`.
+>
+> También tuve que corregir el entorno de la terminal porque Windows utilizaba
+> Java 17, mientras que el proyecto se compila con Java 21.
+>
+> Solucioné ambos inconvenientes deteniendo temporalmente el PostgreSQL local,
+> verificando el contenedor `agrosmart-postgres` y configurando `JAVA_HOME` con
+> el JDK 21. Después Hikari conectó correctamente, Hibernate reconoció
+> PostgreSQL y Netty inició en el puerto `8177`.
 
 **8.3** Si tuvieras 30 minutos más, ¿qué mejorarías **primero** de tu entrega y por qué
 esa y no otra?
 
+> La primera mejora que implementaría sería un manejo centralizado de errores
+> mediante `@RestControllerAdvice`.
 >
+> Actualmente `ProductoNoEncontradoException` responde correctamente con 404
+> gracias a `@ResponseStatus(HttpStatus.NOT_FOUND)`, pero el cuerpo del error
+> depende del formato predeterminado de Spring.
+>
+> Con un manejador centralizado podría devolver una estructura uniforme con
+> código, mensaje, ruta y fecha para todos los errores de la API.
+>
+> Elegiría primero esa mejora porque afecta directamente el contrato HTTP y la
+> experiencia de quien consume AgroSmart. Otras mejoras visuales o de
+> optimización serían útiles, pero una respuesta de error consistente tiene un
+> impacto funcional inmediato y facilitaría futuras integraciones.
 
 **8.4** Declara honestamente qué herramientas consultaste durante el examen
 (documentación, apuntes, asistentes de IA) y para qué. **Esta declaración no descuenta
 puntaje**; su omisión o falsedad sí constituye falta de honestidad académica.
 
+> Durante el desarrollo consulté el README y la rúbrica entregados por el
+> docente para verificar la estructura, los nombres de ramas, los operadores
+> requeridos, los commits obligatorios y las evidencias.
+>
+> Utilicé IntelliJ IDEA para editar y ejecutar el proyecto, Maven Wrapper para
+> compilar y ejecutar las pruebas, Docker Desktop y Docker Compose para
+> PostgreSQL, `psql` para revisar la tabla, Git y GitHub para ramas, commits y
+> Pull Requests, y `curl.exe` para probar los endpoints.
+>
+> También utilicé ChatGPT como asistente para interpretar requisitos, organizar
+> el trabajo por fases, revisar fragmentos de código, redactar documentación y
+> diagnosticar problemas de Java, Docker, PostgreSQL, Maven y Git.
+>
+> Comprobé personalmente el comportamiento mediante compilación, arranque,
+> consultas a PostgreSQL, comandos `curl`, pruebas con JUnit y StepVerifier y la
+> revisión del historial. Preparé la defensa para explicar el funcionamiento del
+> código y las decisiones que quedaron registradas en este archivo.
 >

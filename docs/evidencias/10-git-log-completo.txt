@@ -1,0 +1,33 @@
+﻿*   d3d6fb1 (HEAD -> feature/documentacion, origin/main, origin/HEAD, main) Merge pull request #8 from JavierBravo31/feature/pruebas
+|\  
+| * 90717cf (origin/feature/pruebas, feature/pruebas) test: agrega pruebas del modelo, logica funcional, flujo reactivo e ia
+|/  
+*   60ded45 Merge pull request #7 from JavierBravo31/feature/api-reactiva
+|\  
+| * 18badcd (origin/feature/api-reactiva, feature/api-reactiva) docs: agrega evidencias curl de la fase 6
+* | 8a40b6c Merge pull request #6 from JavierBravo31/feature/api-reactiva
+|\| 
+| * aa4e2e0 feat: expone endpoints reactivos y de publicidad
+|/  
+*   deb1f6f Merge pull request #5 from JavierBravo31/feature/ia-langchain4j
+|\  
+| * 2494c7e (origin/feature/ia-langchain4j, feature/ia-langchain4j) feat: integra langchain4j para publicidad de productos
+|/  
+*   5ffbbda Merge pull request #4 from JavierBravo31/feature/servicio-reactivo
+|\  
+| * 22db0a4 (origin/feature/servicio-reactivo, feature/servicio-reactivo) feat: implementa servicio reactivo con boundedElastic y operadores
+|/  
+*   976e7b2 Merge pull request #3 from JavierBravo31/feature/modelo-inmutable
+|\  
+| * 1d53769 (origin/feature/modelo-inmutable, feature/modelo-inmutable) feat: agrega modelo inmutable de producto y logica funcional
+|/  
+*   5459de3 Merge pull request #2 from JavierBravo31/feature/persistencia-jpa
+|\  
+| * db0e89e (origin/feature/persistencia-jpa, feature/persistencia-jpa) feat: agrega entidad jpa de productos y siembra de datos
+|/  
+*   3a4afae Merge pull request #1 from JavierBravo31/feature/config-perfiles
+|\  
+| * fc48798 (origin/feature/config-perfiles, feature/config-perfiles) chore: configura perfil prod con postgresql y puerto propio
+|/  
+* a24d20f chore: inicializa proyecto agrosmart y registra identidad del examen
+* 77ef0e2 Initial commit
