@@ -376,30 +376,145 @@ qué no son intercambiables en esos dos lugares?
 **5.1** Pega tu interfaz `AgroSmartAIService` completa.
 
 ```java
+package ec.edu.espe.agrosmart.service;
 
+import dev.langchain4j.service.UserMessage;
+import dev.langchain4j.service.V;
+import dev.langchain4j.service.spring.AiService;
+
+@AiService
+public interface AgroSmartAIService {
+
+    @UserMessage("""
+            Redacta una frase publicitaria de máximo 100 caracteres para vender \
+            {{producto}} dirigido a {{audiencia}}.""")
+    String generarPublicidad(
+            @V("producto") String producto,
+            @V("audiencia") String audiencia
+    );
+}
 ```
 
 **5.2** ¿Qué hace `@V("producto")` y qué pasaría si lo quitaras dejando solo el
 parámetro?
 
+> En mi interfaz `AgroSmartAIService`, el mensaje contiene las variables
+> `{{producto}}` y `{{audiencia}}`.
 >
+> Mediante `@V("producto")` relaciono el parámetro Java `producto` con la variable
+> `{{producto}}` del mensaje. De la misma manera, `@V("audiencia")` relaciona el
+> segundo parámetro con `{{audiencia}}`.
+>
+> Cuando ejecute:
+>
+> `aiService.generarPublicidad("Rosas Premium", "floristerías premium")`
+>
+> LangChain4j sustituirá ambas variables antes de enviar el mensaje al modelo.
+>
+> Si eliminara `@V("producto")`, se perdería el vínculo explícito entre el
+> parámetro y la variable `{{producto}}`. Como consecuencia, LangChain4j podría
+> no sustituir correctamente esa variable o producir un error al ejecutar el
+> servicio declarativo.
 
 **5.3** ¿En qué archivo y con qué líneas configuraste el modelo? ¿Por qué **no** hizo
 falta declarar un `@Bean`?
 
+> Configuré el modelo en:
 >
+> `src/main/resources/application-prod.properties`
+>
+> En mi archivo utilicé las siguientes líneas:
+>
+> ```properties
+> langchain4j.open-ai.chat-model.api-key=demo
+> langchain4j.open-ai.chat-model.model-name=gpt-4o-mini
+> langchain4j.open-ai.chat-model.timeout=30s
+> langchain4j.open-ai.chat-model.log-requests=true
+> langchain4j.open-ai.chat-model.log-responses=true
+> logging.level.dev.langchain4j=DEBUG
+> ```
+>
+> No declaré un `@Bean` ni creé una clase adicional de configuración porque mi
+> proyecto utiliza `langchain4j-open-ai-spring-boot-starter`.
+>
+> El starter lee automáticamente las propiedades del perfil `prod`, configura el
+> modelo de chat y genera una implementación de mi interfaz
+> `AgroSmartAIService`, marcada con `@AiService`.
+>
+> Comprobé que esta configuración no impedía iniciar la aplicación: Spring creó
+> correctamente el contexto, Netty inició en el puerto `8177` y apareció el
+> mensaje `Started AgrosmartApplication`.
 
 **5.4** ¿Por qué la llamada a la IA también necesita `boundedElastic`, si no es una
 consulta a base de datos?
 
+> Aunque no sea una consulta a PostgreSQL, la ejecución de
+> `aiService.generarPublicidad(producto, audiencia)` realiza una petición al
+> proveedor del modelo y espera su respuesta.
 >
+> Esa espera es una operación bloqueante. Por eso, en mi clase
+> `PublicidadService`, la envolví mediante:
+>
+> ```java
+> Mono.fromCallable(
+>         () -> aiService.generarPublicidad(producto, audiencia)
+> )
+> .subscribeOn(Schedulers.boundedElastic())
+> ```
+>
+> `Mono.fromCallable` retrasa la ejecución hasta que exista una suscripción y
+> `boundedElastic` traslada la llamada bloqueante a un hilo adecuado para este
+> tipo de tareas.
+>
+> Sin `boundedElastic`, cuando el método sea utilizado desde el controlador, la
+> espera podría ejecutarse en un hilo del event loop de Netty. Ese hilo quedaría
+> ocupado mientras el proveedor responde y no podría atender otras solicitudes.
+>
+> También agregué:
+>
+> ```java
+> .timeout(Duration.ofSeconds(30))
+> ```
+>
+> para limitar el tiempo de espera, y:
+>
+> ```java
+> .onErrorResume(...)
+> ```
+>
+> para producir una respuesta de respaldo cuando ocurra un error.
 
 **5.5** Si tu proveedor devolvió un error durante el examen, pega el mensaje real y la
 respuesta que produjo tu `onErrorResume`.
 
+```text
+Durante la Fase 5 todavía no invoqué directamente al proveedor de IA, porque el
+endpoint de publicidad se implementará y probará mediante curl en la Fase 6.
+
+En esta fase comprobé que el contexto de Spring inició correctamente y que
+LangChain4j no impidió el arranque de AgroSmart.
+
+La respuesta de respaldo implementada tiene este formato:
+
+Publicidad no disponible en este momento (NombreDeLaExcepcion)
 ```
 
-```
+> En mi clase `PublicidadService` implementé:
+>
+> ```java
+> .onErrorResume(error -> Mono.just(
+>         "Publicidad no disponible en este momento ("
+>                 + error.getClass().getSimpleName()
+>                 + ")"
+> ));
+> ```
+>
+> De esta manera, si ocurre un timeout, un error de red, una credencial inválida
+> o un problema de cuota, el flujo no termina con un error sin controlar.
+>
+> En su lugar, `onErrorResume` reemplaza el error por un `Mono<String>` que emite
+> el mensaje de respaldo. Cuando pruebe el endpoint de publicidad en la Fase 6,
+> actualizaré esta respuesta únicamente si obtengo un error real del proveedor.
 
 ---
 
